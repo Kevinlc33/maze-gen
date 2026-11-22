@@ -1,0 +1,45 @@
+# Tasks
+
+## Audit Finding Traceability
+
+| Finding | Preserved audit result | Remediation tasks | PRD v0.7 requirements |
+|---|---|---|---|
+| F-01 — Critical, confirmed | A 1×2 topology with no intended edge, 20×10 m bounds, and a 1 m vertical wall at x=10 from y=2 to y=8 is physically connected around the wall ends but passes candidate validation. Global connected-component comparison also cannot detect every local shortcut. | 2.1–2.2 | FR-013–018; AC-105.1–105.4, AC-105.6 |
+| F-02 — High, confirmed | An endpoint and portal at x=1000 in 10×10 m bounds are mapped into the last cell and accepted; portal region declarations are not checked against physical connections. | 1.1–1.2, 2.1–2.2 | FR-017–018, FR-024; AC-105.5–105.6 |
+| F-03 — High, confirmed | NaN design width and NaN wall thickness produce no validation issues; a non-finite wall can be treated as no obstacle. | 1.1–1.2 | FR-012–018; AC-103.8, AC-104.8, AC-105.6 |
+| F-04 — Critical, confirmed integration gap | The verifier accepts a caller-built graph and `geometryValid` boolean without requiring evidence from physical reconstruction. | 2.1, 2.3 | FR-018, FR-030–031; AC-301.1, AC-301.7–301.9 |
+| F-05 — High, confirmed integration gap | Wall-toggle verification compares abstract graphs and does not add/remove a wall from geometry or reconstruct either physical state. | 3.1–3.2 | FR-032–033; AC-302.1–302.8, AC-303.1–303.5 |
+| F-06 — High, confirmed limitation | Classification trusts caller-supplied paths and uses region count as route length; it does not establish legal routes, physical distance, or designated-wall encounter evidence. | 3.3–3.4 | FR-025, FR-034; AC-304.1–304.6 |
+| F-07 — High, confirmed | Construction derives placements from cell dimensions without applying the configured construction increment. | 1.3–1.4 | FR-010, FR-012; AC-103.5–103.6, AC-201.5 |
+| F-08 — High, confirmed integration gap | Generate changes UI status without invoking configuration, candidate construction, worker scheduling, physical validation, or formal verification; completion-order determinism is not established on the production path. Pending-edit revisions must remain distinct from submitted-job revisions. | 4.1–4.3 | FR-021; AC-102.5, AC-107.1–107.6, AC-301.9 |
+
+## Stage A — Geometry and Input Integrity
+
+- [x] 1.1 Add failing regression tests for F-02 and F-03: reject out-of-bounds endpoints and portals (including x=1000 in 10×10 m bounds), mismatched portal region pairs, NaN/Infinity configuration, coordinates, and physical dimensions; verify each test fails against current behavior. PRD: FR-012, FR-017–018, FR-024; AC-103.8, AC-104.8, AC-105.5–105.6.
+- [x] 1.2 Fix finite-value validation, geometric-boundary checks, endpoint accessibility, and portal bounds/region-reference validation; verify the F-02/F-03 regressions pass and malformed geometry cannot become candidate-eligible. Physical portal-edge correspondence is verified in Stage B. PRD: FR-012, FR-017–018, FR-024; AC-103.8, AC-104.8, AC-105.5–105.6.
+- [x] 1.3 Add a failing generated-geometry regression for F-07 using a configured 0.5 m increment and dimensions that otherwise produce off-increment placements; verify it fails before changing construction. PRD: FR-010, FR-012; AC-103.5–103.6, AC-201.5.
+- [x] 1.4 Enforce configured increments on applicable generated dimensions and placements, or return an actionable infeasibility result without compromising clearance or bounds; verify property tests on constructed geometry and an unchanged canonical-geometry fixture when the increment is unset. Document and version any output-affecting change for configured increments. PRD: FR-010, FR-012, FR-021; AC-103.5–103.6, AC-201.5.
+
+## Stage B — Authoritative Physical Navigation
+
+- [x] 2.1 Add failing independent reference fixtures for F-01, F-02, and F-04, including the exact 20×10 m wall-end shortcut reproduction, known connected/disconnected and portal cases (including valid-looking region IDs on the wrong physical connection), and subdivision-equivalent geometry; assert physical connectivity and that an unvalidated graph cannot enter production verification. Include a shortcut whose mapped nodes are already in one global component. PRD: FR-013–018, FR-030; AC-105.1–105.5, AC-105.8, AC-301.1.
+- [x] 2.2 Build explicit physical regions, connections, and portal evidence from wall footprints, clearance, bounds, and openings; map every intended node to a physical anchor/zone, every intended edge to a traversable boundary-crossing witness, and every non-edge to a barrier/cut witness. Check all physical crossings even within one global component, and prove each portal joins its declared physical region pair through its opening. Contract only subdivision-only features after retaining those witnesses. Verify references, shortcut rejection, portal mismatch rejection, subdivision invariance, and non-conclusive resource exhaustion. PRD: FR-013–018; AC-105.1–105.8.
+- [x] 2.3 Introduce a controlled validated-navigation artifact and production adapter for formal verification; remove arbitrary-boolean physical validity from production entry points while preserving the existing finite-state search. Verify solvable, exhaustive-unsolvable, invalid, cancellation, and resource-limit outcomes using the physical reference fixtures end to end. PRD: FR-018, FR-030–031; AC-105.8, AC-301.1–301.9.
+
+## Stage C — Physical Progression Correctness
+
+- [x] 3.1 Add failing F-05 regressions proving an abstract connection-list change cannot stand in for a physical wall toggle; include geometry identity, wall footprint, and both expected solvability outcomes. PRD: FR-032–033; AC-302.1–302.8, AC-303.1–303.5.
+- [x] 3.2 Implement wall-present and wall-absent geometry snapshots that differ only by the designated wall operation; independently reconstruct and formally verify both states, and bind the wall ID to the physical connection it changes. Verify both addition and removal modes through the production physical-navigation adapter. PRD: FR-032–033; AC-302.1–302.8, AC-303.1–303.5.
+- [x] 3.3 Add failing F-06 regressions for legal alternative objective orders, physically weighted route lengths, tied shortest routes, zero-cost transitions and cycles, earliest/latest encounter extrema, wall bypasses, Not Encountered, zero-length paths, and exhausted analysis; verify current route-list classification cannot satisfy them. PRD: FR-025, FR-034; AC-304.1–304.6.
+- [x] 3.4 Derive legal orders and shortest completion routes from the validated progression-state graph and its geometry-derived passage/location distances; do not accept caller-supplied route lists or use region/edge counts. Use bounded dynamic programming over zero-cost-SCC-condensed shortest-route graphs to compute encounter extrema across every tied route. Preserve objective-order and encounter/bypass alternatives inside each component; return Incomplete if route metrics or exact outcomes cannot be established. Define a wall encounter as traversing its validated affected passage, not adjacency or approach; return Variable for mixed encounter/bypass routes, Not Encountered or reject when no route encounters it. Verify 1/3 and 2/3 boundaries, zero-length handling, deterministic ties, and no partial classifications. PRD: FR-025, FR-034; AC-304.1–304.6.
+
+## Stage D — End-to-End Integration
+
+- [x] 4.1 Add failing integration tests that call the single production pipeline entry point and exercise F-08: a pending sidebar edit does not invalidate a submitted snapshot; a new generation request supersedes the older job; explicit cancellation invalidates it; rendered and pending configurations remain distinct; progress, stale-result rejection, last-design preservation, and output under permuted worker completion orders are correct. Verify tests fail before integration. PRD: FR-021; AC-102.5, AC-107.1–107.6, AC-301.9.
+- [x] 4.2 Connect the configuration store and Generate action to one React-independent candidate-pipeline entry point used directly by integration tests; keep configuration-edit and generation-job revisions separate. Integrate indexed candidate generation, bounded workers, construction, physical validation, formal verification, and deterministic publication. Verify all 4.1 scenarios through this shared production path and ensure only validated, verified candidates can publish. PRD: FR-018, FR-021, FR-030–031; AC-102.5, AC-105.8, AC-107.1–107.6, AC-301.1, AC-301.9.
+- [x] 4.3 Run unit/property, integration and browser end-to-end tests, TypeScript checking, lint, and production build; then perform a fresh read-only audit of all affected paths. Completion requires production-path evidence for every integration-dependent criterion and no unresolved Critical or High remediation finding. Keep task 6 blocked until this acceptance is documented. PRD: FR-010–018, FR-021, FR-024–034; AC-105, AC-107, AC-301–304.
+
+## Workflow follow-up
+
+- Review the fresh read-only audit before resuming task 6.1 or later.
+- Do not implement task 6.1 or later until all remediation acceptance criteria pass and the fresh audit is reviewed.

@@ -1,0 +1,151 @@
+.app-shell {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  background: #f6f7fb;
+  color: #171a21;
+}
+
+.app-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 72px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #dde1ea;
+  background: #fff;
+}
+
+.app-header h1,
+.app-header p {
+  margin: 0;
+}
+
+.app-header h1 {
+  font-size: 24px;
+}
+
+.eyebrow {
+  color: #697184;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.toolbar,
+.viewport-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+button {
+  min-height: 36px;
+  border: 1px solid #cfd5e2;
+  border-radius: 6px;
+  background: #fff;
+  color: inherit;
+  padding: 8px 12px;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid #5b7cff;
+  outline-offset: 2px;
+}
+
+.configuration-sidebar {
+  padding: 20px;
+  border-right: 1px solid #dde1ea;
+  background: #fafbfe;
+  text-align: left;
+}
+
+.configuration-sidebar h2 {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.configuration-sidebar fieldset {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 16px;
+  border: 1px solid #dde1ea;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.configuration-sidebar label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.configuration-sidebar input,
+.configuration-sidebar select {
+  width: 100%;
+  min-height: 36px;
+  box-sizing: border-box;
+  border: 1px solid #cfd5e2;
+  border-radius: 6px;
+  background: #fff;
+  color: inherit;
+}
+
+.viewport-panel {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: 16px;
+  gap: 10px;
+}
+
+.viewport-toolbar {
+  justify-content: flex-end;
+}
+
+.viewport-empty {
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border: 1px solid #dde1ea;
+  border-radius: 10px;
+  background: #fff;
+  color: #8790a1;
+}
+
+.viewport-empty svg {
+  width: min(92%, 800px);
+  height: auto;
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .app-header,
+  .configuration-sidebar,
+  .viewport-panel {
+    grid-column: 1;
+  }
+
+  .configuration-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid #dde1ea;
+  }
+
+  .viewport-empty {
+    min-height: 300px;
+  }
+}
